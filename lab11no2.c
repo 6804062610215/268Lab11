@@ -1,5 +1,7 @@
 #include <stdio.h>
+
 #define NO_SCORE 5
+#define NO_STUDENT 10
 
 typedef struct {
     char name[16];
@@ -8,84 +10,102 @@ typedef struct {
     float total;
 } Student;
 
-void readStudentData(Student *);
-void findTotalScore(Student *);
-float findAverage(Student);
-void findLessThanTen(Student);
+void readStudentData(Student s[]);
+void writeFile(Student s[]);
+void readFile(Student s[]);
+void findTotalScore(Student *pStd);
+float findAverage(Student s);
+void findLessThanTen(Student s);
 
 int main() {
-    Student std;
-    int amount = 2, i;
+    Student std[NO_STUDENT];
+    int i;
     float avg;
 
-	for(i = 0; i < amount; i++){
-		readStudentData(&std);
-    	findTotalScore(&std);
-	}
+    readStudentData(std);
+    writeFile(std);
 
-    avg = findAverage(std);
-    printf("\n\nAverage score is %.2f", avg);
+    printf("\n\n--- Read data from file ---\n");
+    readFile(std);
 
-    findLessThanTen(std);
+    for(i=0;i<NO_STUDENT;i++){
+        findTotalScore(&std[i]);
+        avg = findAverage(std[i]);
+        printf("\nAverage score = %.2f", avg);
+        findLessThanTen(std[i]);
+        printf("\n--------------------------\n");
+    }
 
     return 0;
 }
 
-void readStudentData(Student *pStd) {
-    int i;
-    
-    printf("Enter student data\n");
+void readStudentData(Student s[]) {
+    int i,j;
 
-    printf("\tName : ");
-    scanf("%s", pStd->name);
+    for(i=0;i<NO_STUDENT;i++){
+        printf("\nStudent %d\n",i+1);
 
-    printf("\tSurname : ");
-    scanf("%s", pStd->surname);
-	
-    for (i = 0; i < NO_SCORE; i++) {
-        printf("\tScore %d : ", i + 1);
-        scanf("%d", &pStd->score[i]);
+        printf("Name : ");
+        scanf("%s", s[i].name);
+
+        printf("Surname : ");
+        scanf("%s", s[i].surname);
+
+        for(j=0;j<NO_SCORE;j++){
+            printf("Score %d : ",j+1);
+            scanf("%d",&s[i].score[j]);
+        }
     }
 }
 
-void findTotalScore(Student *pStd) {
-    int i;
-    mkdir("lab11");
-    mkdir("lab11\\no2");
-    
+void writeFile(Student s[]){
     FILE *fp;
-	fp = fopen("lab11\\no2\\std10.dat", "a");
+    fp = fopen("Wlab11no2lstd10.dat","wb");
 
-    //printf("\n\nPrint student data");
-    //printf("\n\t%s %s got score ", pStd->name, pStd->surname);
-	fprintf(fp, "%s %s got score ", pStd->name, pStd->surname);
-    pStd->total = 0.0;
+    fwrite(s,sizeof(Student),NO_STUDENT,fp);
 
-    for (i = 0; i < NO_SCORE; i++) {
-        fprintf(fp, "%6d", pStd->score[i]);
-        pStd->total += pStd->score[i];
-    }fprintf(fp, "\n");
-	
     fclose(fp);
 }
 
-float findAverage(Student s) {
-    return s.total / NO_SCORE;
+void readFile(Student s[]){
+    FILE *fp;
+    fp = fopen("Wlab11no2lstd10.dat","rb");
+
+    fread(s,sizeof(Student),NO_STUDENT,fp);
+
+    fclose(fp);
 }
 
-void findLessThanTen(Student s) {
-    int i, count = 0;
+void findTotalScore(Student *pStd){
+    int i;
+    pStd->total = 0;
 
-    printf("\n\nScore less than 10");
+    printf("\n%s %s score :",pStd->name,pStd->surname);
 
-    for (i = 0; i < NO_SCORE; i++) {
-        if (s.score[i] < 10) {
-            printf("\n\tTest no.%d - %d", i + 1, s.score[i]);
+    for(i=0;i<NO_SCORE;i++){
+        printf(" %d",pStd->score[i]);
+        pStd->total += pStd->score[i];
+    }
+
+    printf("\nTotal = %.2f",pStd->total);
+}
+
+float findAverage(Student s){
+    return s.total/NO_SCORE;
+}
+
+void findLessThanTen(Student s){
+    int i,count=0;
+
+    printf("\nScore < 10");
+
+    for(i=0;i<NO_SCORE;i++){
+        if(s.score[i] < 10){
+            printf("\nTest %d = %d",i+1,s.score[i]);
             count++;
         }
     }
 
-    if (count == 0) {
-        printf(" -> None");
-    }
+    if(count==0)
+        printf(" : None");
 }
